@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { useFormValidation } from '../../hooks/useFormValidation';
 import { studentValidationSchema } from '../../utils/validation';
+import { StyledTextField } from '../common';
 
 const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false }) => {
   const isEdit = Boolean(student);
@@ -86,12 +87,13 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>
         {isEdit ? 'Edit Student' : 'Add New Student'}
       </DialogTitle>
-      <DialogContent>
-        <Grid container spacing={3} sx={{ mt: 1 }}>
+      <DialogContent sx={{ pb: 2 }}>
+        <Box sx={{ maxHeight: '70vh', overflowY: 'auto', pr: 1 }}>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
           {/* Basic Information */}
           <Grid item xs={12}>
             <Typography variant="h6" gutterBottom>
@@ -101,7 +103,7 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
           </Grid>
           
           <Grid item xs={12} sm={6}>
-            <TextField
+            <StyledTextField
               fullWidth
               label="First Name"
               value={values.name.firstName}
@@ -113,7 +115,7 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
           </Grid>
           
           <Grid item xs={12} sm={6}>
-            <TextField
+            <StyledTextField
               fullWidth
               label="Last Name"
               value={values.name.lastName}
@@ -125,7 +127,7 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
           </Grid>
           
           <Grid item xs={12} sm={6}>
-            <TextField
+            <StyledTextField
               fullWidth
               label="Email"
               type="email"
@@ -138,7 +140,7 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
           </Grid>
           
           <Grid item xs={12} sm={6}>
-            <TextField
+            <StyledTextField
               fullWidth
               label="Date of Birth"
               type="date"
@@ -152,7 +154,7 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
           </Grid>
           
           <Grid item xs={12} sm={6}>
-            <TextField
+            <StyledTextField
               select
               fullWidth
               label="Gender"
@@ -167,11 +169,11 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
                   {gender}
                 </MenuItem>
               ))}
-            </TextField>
+            </StyledTextField>
           </Grid>
           
           <Grid item xs={12} sm={6}>
-            <TextField
+            <StyledTextField
               select
               fullWidth
               label="Blood Group"
@@ -183,7 +185,7 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
                   {group}
                 </MenuItem>
               ))}
-            </TextField>
+            </StyledTextField>
           </Grid>
 
           {/* Academic Information */}
@@ -195,7 +197,7 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
           </Grid>
           
           <Grid item xs={12} sm={4}>
-            <TextField
+            <StyledTextField
               select
               fullWidth
               label="Standard"
@@ -210,11 +212,11 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
                   {standard}
                 </MenuItem>
               ))}
-            </TextField>
+            </StyledTextField>
           </Grid>
           
           <Grid item xs={12} sm={4}>
-            <TextField
+            <StyledTextField
               select
               fullWidth
               label="Section"
@@ -229,11 +231,11 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
                   {section}
                 </MenuItem>
               ))}
-            </TextField>
+            </StyledTextField>
           </Grid>
           
           <Grid item xs={12} sm={4}>
-            <TextField
+            <StyledTextField
               fullWidth
               label="Roll Number"
               type="number"
@@ -246,7 +248,7 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
           </Grid>
           
           <Grid item xs={12} sm={6}>
-            <TextField
+            <StyledTextField
               select
               fullWidth
               label="Overall Grade"
@@ -258,11 +260,11 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
                   {grade}
                 </MenuItem>
               ))}
-            </TextField>
+            </StyledTextField>
           </Grid>
           
           <Grid item xs={12} sm={6}>
-            <TextField
+            <StyledTextField
               fullWidth
               label="Overall Percentage"
               type="number"
@@ -271,16 +273,181 @@ const StudentForm = ({ open, onClose, onSubmit, student = null, loading = false 
               inputProps={{ min: 0, max: 100 }}
             />
           </Grid>
-        </Grid>
+          
+          {/* Contact Information */}
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+              Contact Information
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+          </Grid>
+          
+          <Grid item xs={12} sm={6}>
+            <StyledTextField
+              fullWidth
+              label="Street Address"
+              value={values.contactInfo.address.street}
+              onChange={(e) => handleChange('contactInfo.address.street', e.target.value)}
+              multiline
+              rows={2}
+            />
+          </Grid>
+          
+          <Grid item xs={12} sm={6}>
+            <StyledTextField
+              fullWidth
+              label="City"
+              value={values.contactInfo.address.city}
+              onChange={(e) => handleChange('contactInfo.address.city', e.target.value)}
+            />
+          </Grid>
+          
+          <Grid item xs={12} sm={6}>
+            <StyledTextField
+              fullWidth
+              label="State"
+              value={values.contactInfo.address.state}
+              onChange={(e) => handleChange('contactInfo.address.state', e.target.value)}
+            />
+          </Grid>
+          
+          <Grid item xs={12} sm={6}>
+            <StyledTextField
+              fullWidth
+              label="Pin Code"
+              value={values.contactInfo.address.pinCode}
+              onChange={(e) => handleChange('contactInfo.address.pinCode', e.target.value)}
+            />
+          </Grid>
+          
+          {/* Emergency Contact */}
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+              Emergency Contact
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+          </Grid>
+          
+          <Grid item xs={12} sm={4}>
+            <StyledTextField
+              fullWidth
+              label="Contact Name"
+              value={values.contactInfo.emergencyContact.name}
+              onChange={(e) => handleChange('contactInfo.emergencyContact.name', e.target.value)}
+            />
+          </Grid>
+          
+          <Grid item xs={12} sm={4}>
+            <StyledTextField
+              select
+              fullWidth
+              label="Relationship"
+              value={values.contactInfo.emergencyContact.relationship}
+              onChange={(e) => handleChange('contactInfo.emergencyContact.relationship', e.target.value)}
+            >
+              {relationships.map((rel) => (
+                <MenuItem key={rel} value={rel}>
+                  {rel}
+                </MenuItem>
+              ))}
+            </StyledTextField>
+          </Grid>
+          
+          <Grid item xs={12} sm={4}>
+            <StyledTextField
+              fullWidth
+              label="Phone Number"
+              value={values.contactInfo.emergencyContact.phone}
+              onChange={(e) => handleChange('contactInfo.emergencyContact.phone', e.target.value)}
+            />
+          </Grid>
+          
+          {/* Parent Information */}
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+              Parent Information
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+          </Grid>
+          
+          <Grid item xs={12} sm={6}>
+            <Typography variant="subtitle1" gutterBottom color="primary">
+              Father's Details
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <StyledTextField
+                fullWidth
+                label="Father's Name"
+                value={values.parentInfo.father.name}
+                onChange={(e) => handleChange('parentInfo.father.name', e.target.value)}
+              />
+              <StyledTextField
+                fullWidth
+                label="Father's Occupation"
+                value={values.parentInfo.father.occupation}
+                onChange={(e) => handleChange('parentInfo.father.occupation', e.target.value)}
+              />
+              <StyledTextField
+                fullWidth
+                label="Father's Phone"
+                value={values.parentInfo.father.phone}
+                onChange={(e) => handleChange('parentInfo.father.phone', e.target.value)}
+              />
+              <StyledTextField
+                fullWidth
+                label="Father's Email"
+                type="email"
+                value={values.parentInfo.father.email}
+                onChange={(e) => handleChange('parentInfo.father.email', e.target.value)}
+              />
+            </Box>
+          </Grid>
+          
+          <Grid item xs={12} sm={6}>
+            <Typography variant="subtitle1" gutterBottom color="primary">
+              Mother's Details
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <StyledTextField
+                fullWidth
+                label="Mother's Name"
+                value={values.parentInfo.mother.name}
+                onChange={(e) => handleChange('parentInfo.mother.name', e.target.value)}
+              />
+              <StyledTextField
+                fullWidth
+                label="Mother's Occupation"
+                value={values.parentInfo.mother.occupation}
+                onChange={(e) => handleChange('parentInfo.mother.occupation', e.target.value)}
+              />
+              <StyledTextField
+                fullWidth
+                label="Mother's Phone"
+                value={values.parentInfo.mother.phone}
+                onChange={(e) => handleChange('parentInfo.mother.phone', e.target.value)}
+              />
+              <StyledTextField
+                fullWidth
+                label="Mother's Email"
+                type="email"
+                value={values.parentInfo.mother.email}
+                onChange={(e) => handleChange('parentInfo.mother.email', e.target.value)}
+              />
+            </Box>
+          </Grid>
+          
+          </Grid>
+        </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={isSubmitting}>
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose} disabled={isSubmitting} size="large">
           Cancel
         </Button>
         <Button
           onClick={handleFormSubmit}
           variant="contained"
           disabled={isSubmitting}
+          size="large"
         >
           {isSubmitting ? 'Saving...' : (isEdit ? 'Update' : 'Create')}
         </Button>

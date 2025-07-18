@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Search, Add, FilterList } from '@mui/icons-material';
 import { StudentList, StudentForm } from '../../components/students';
-import { ConfirmDialog } from '../../components/common';
+import { ConfirmDialog, StyledTextField } from '../../components/common';
 import { 
   fetchStudents, 
   createStudent, 
@@ -37,7 +37,7 @@ const StudentsPage = () => {
 
   useEffect(() => {
     dispatch(fetchStudents({ ...filters, page: 1 }));
-  }, [dispatch, filters]);
+  }, [dispatch, filters.search, filters.standard, filters.section, filters.sortBy, filters.isActive]);
 
   const handleSearch = (value) => {
     dispatch(setFilters({ search: value, page: 1 }));
@@ -145,7 +145,7 @@ const StudentsPage = () => {
               />
             </Grid>
             <Grid item xs={12} md={2}>
-              <TextField
+              <StyledTextField
                 select
                 fullWidth
                 label="Standard"
@@ -156,10 +156,10 @@ const StudentsPage = () => {
                 {['KG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'].map((std) => (
                   <MenuItem key={std} value={std}>{std}</MenuItem>
                 ))}
-              </TextField>
+              </StyledTextField>
             </Grid>
             <Grid item xs={12} md={2}>
-              <TextField
+              <StyledTextField
                 select
                 fullWidth
                 label="Section"
@@ -170,10 +170,10 @@ const StudentsPage = () => {
                 {['A', 'B', 'C', 'D'].map((section) => (
                   <MenuItem key={section} value={section}>{section}</MenuItem>
                 ))}
-              </TextField>
+              </StyledTextField>
             </Grid>
             <Grid item xs={12} md={2}>
-              <TextField
+              <StyledTextField
                 select
                 fullWidth
                 label="Sort By"
@@ -184,7 +184,7 @@ const StudentsPage = () => {
                 <MenuItem value="name.firstName">Name</MenuItem>
                 <MenuItem value="studentId">Student ID</MenuItem>
                 <MenuItem value="standard">Standard</MenuItem>
-              </TextField>
+              </StyledTextField>
             </Grid>
             <Grid item xs={12} md={2}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

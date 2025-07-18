@@ -107,14 +107,22 @@ export const staffValidationSchema = yup.object({
     .string()
     .min(6, 'Password must be at least 6 characters')
     .required('Password is required'),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref('password')], 'Passwords must match')
+    .required('Confirm password is required'),
   phone: yup
     .string()
     .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
     .required('Phone number is required'),
   department: yup
     .string()
-    .oneOf(['Administration', 'Academics', 'Sports', 'Arts', 'Science'])
+    .oneOf(['Administration', 'Academics', 'Sports', 'Arts', 'Science', 'Mathematics', 'Languages', 'Social Studies'])
     .required('Department is required'),
+  position: yup
+    .string()
+    .oneOf(['Principal', 'Vice Principal', 'Head Teacher', 'Teacher', 'Assistant Teacher', 'Admin Staff', 'Sports Coach', 'Librarian'])
+    .required('Position is required'),
 });
 
 // Login validation schema

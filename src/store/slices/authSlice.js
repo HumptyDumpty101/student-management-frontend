@@ -75,7 +75,7 @@ export const changePassword = createAsyncThunk(
 const initialState = {
   user: null,
   refreshToken: localStorage.getItem('refreshToken'),
-  isAuthenticated: !!localStorage.getItem('refreshToken'),
+  isAuthenticated: false, // Don't assume authentication until user data is verified
   loading: false,
   error: null,
   isInitialized: false,
@@ -96,6 +96,7 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.isAuthenticated = false;
       state.error = null;
+      state.isInitialized = true;
       localStorage.removeItem('refreshToken');
     },
   },

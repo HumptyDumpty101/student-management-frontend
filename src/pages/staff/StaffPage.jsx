@@ -14,7 +14,7 @@ import {
   Chip
 } from '@mui/material';
 import { Search, Add } from '@mui/icons-material';
-import { ConfirmDialog } from '../../components/common';
+import { ConfirmDialog, StyledTextField } from '../../components/common';
 import { 
   fetchStaff, 
   createStaff, 
@@ -35,7 +35,7 @@ const StaffPage = () => {
 
   useEffect(() => {
     dispatch(fetchStaff({ ...filters, page: 1 }));
-  }, [dispatch, filters]);
+  }, [dispatch, filters.search, filters.department, filters.isActive, filters.sortBy]);
 
   const handleSearch = (value) => {
     dispatch(setFilters({ search: value, page: 1 }));
@@ -114,7 +114,7 @@ const StaffPage = () => {
               />
             </Grid>
             <Grid item xs={12} md={3}>
-              <TextField
+              <StyledTextField
                 select
                 fullWidth
                 label="Department"
@@ -125,10 +125,10 @@ const StaffPage = () => {
                 {['Administration', 'Academics', 'Sports', 'Arts', 'Science'].map((dept) => (
                   <MenuItem key={dept} value={dept}>{dept}</MenuItem>
                 ))}
-              </TextField>
+              </StyledTextField>
             </Grid>
             <Grid item xs={12} md={3}>
-              <TextField
+              <StyledTextField
                 select
                 fullWidth
                 label="Status"
@@ -138,7 +138,7 @@ const StaffPage = () => {
                 <MenuItem value="">All Status</MenuItem>
                 <MenuItem value="true">Active</MenuItem>
                 <MenuItem value="false">Inactive</MenuItem>
-              </TextField>
+              </StyledTextField>
             </Grid>
             <Grid item xs={12} md={2}>
               <Chip

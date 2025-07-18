@@ -1,13 +1,14 @@
+import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
 export const usePermissions = () => {
   const { user } = useSelector(state => state.auth);
 
-  const checkPermission = (module, action) => {
+  const checkPermission = useCallback((module, action) => {
     if (!user) return false;
     if (user.role === 'superAdmin') return true;
     return user.permissions?.[module]?.[action] || false;
-  };
+  }, [user]);
 
   const permissions = {
     students: {

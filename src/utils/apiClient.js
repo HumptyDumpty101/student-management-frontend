@@ -54,14 +54,21 @@ apiClient.interceptors.response.use(
     // Handle 401 errors with token refresh
     if (
       error.response?.status === 401 &&
-      error.response?.data?.message === 'Access token has expired' &&
+      (error.response?.data?.message === 'Access token has expired' || 
+       error.response?.data?.message === 'Invalid token' ||
+       error.response?.data?.message === 'jwt expired') &&
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
 
       try {
         const state = store.getState();
-        const currentRefreshToken = state.auth.refreshToken;
+        let currentRefreshToken = state.auth.refreshToken;
+        
+        // If no refresh token in state, try to get it from localStorage
+        if (!currentRefreshToken) {
+          currentRefreshToken = localStorage.getItem('refreshToken');
+        }
 
         if (currentRefreshToken) {
           await store.dispatch(refreshToken(currentRefreshToken)).unwrap();
@@ -69,7 +76,10 @@ apiClient.interceptors.response.use(
         }
       } catch (refreshError) {
         store.dispatch(clearAuth());
-        window.location.href = '/login';
+        // Only redirect to login if not already on login page
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshError);
       }
     }

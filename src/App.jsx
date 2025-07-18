@@ -4,7 +4,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { store } from './store';
-import { getCurrentUser } from './store/slices/authSlice';
+import { getCurrentUser, setInitialized, clearAuth } from './store/slices/authSlice';
+import { createStudent } from './store/slices/studentSlice';
+import { createStaff } from './store/slices/staffSlice';
+import { showSnackbar, closeDialog } from './store/slices/uiSlice';
 import { tokenStorage } from './utils/tokenStorage';
 
 // Layout
@@ -20,6 +23,8 @@ import ProfilePage from './pages/profile/ProfilePage';
 
 // Components
 import { ProtectedRoute, ErrorBoundary, GlobalSnackbar, LoadingScreen } from './components/common';
+import StudentForm from './components/students/StudentForm';
+import StaffForm from './components/staff/StaffForm';
 
 const theme = createTheme({
   palette: {
@@ -60,12 +65,18 @@ const AppInitializer = ({ children }) => {
       const refreshToken = tokenStorage.getRefreshToken();
       const storedUser = tokenStorage.getUser();
 
-      if (refreshToken && storedUser) {
+      if (refreshToken) {
         try {
+          // If we have a refresh token, try to get current user data
           await dispatch(getCurrentUser()).unwrap();
         } catch (error) {
-          tokenStorage.clear();
+          // If getting current user fails, clear stored data and mark as initialized
+          console.warn('Failed to get current user on initialization:', error);
+          dispatch(clearAuth());
         }
+      } else {
+        // No stored refresh token, mark as initialized
+        dispatch(setInitialized());
       }
     };
 
@@ -137,6 +148,47 @@ const AppRoutes = () => {
   );
 };
 
+// Modal Components
+const AppModals = () => {
+  const dispatch = useDispatch();
+  const { dialogs } = useSelector(state => state.ui);
+
+  const handleStudentSubmit = async (studentData) => {
+    try {
+      await dispatch(createStudent(studentData)).unwrap();
+      dispatch(showSnackbar({ message: 'Student created successfully', severity: 'success' }));
+      dispatch(closeDialog('addStudent'));
+    } catch (error) {
+      dispatch(showSnackbar({ message: error || 'Failed to create student', severity: 'error' }));
+    }
+  };
+
+  const handleStaffSubmit = async (staffData) => {
+    try {
+      await dispatch(createStaff(staffData)).unwrap();
+      dispatch(showSnackbar({ message: 'Staff member created successfully', severity: 'success' }));
+      dispatch(closeDialog('addStaff'));
+    } catch (error) {
+      dispatch(showSnackbar({ message: error || 'Failed to create staff member', severity: 'error' }));
+    }
+  };
+
+  return (
+    <>
+      <StudentForm
+        open={dialogs.addStudent}
+        onClose={() => dispatch(closeDialog('addStudent'))}
+        onSubmit={handleStudentSubmit}
+      />
+      <StaffForm
+        open={dialogs.addStaff}
+        onClose={() => dispatch(closeDialog('addStaff'))}
+        onSubmit={handleStaffSubmit}
+      />
+    </>
+  );
+};
+
 // Main App Component
 const App = () => {
   return (
@@ -147,6 +199,7 @@ const App = () => {
           <Router>
             <AppInitializer>
               <AppRoutes />
+              <AppModals />
               <GlobalSnackbar />
             </AppInitializer>
           </Router>
