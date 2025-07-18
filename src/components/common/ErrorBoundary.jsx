@@ -18,7 +18,6 @@ class ErrorBoundary extends React.Component {
       errorInfo: errorInfo
     });
     
-    // Log error to monitoring service
     console.error('Error caught by boundary:', error, errorInfo);
   }
 
@@ -59,18 +58,6 @@ class ErrorBoundary extends React.Component {
                 Go Home
               </Button>
             </Box>
-            
-            {process.env.NODE_ENV === 'development' && (
-              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
-                <Typography variant="caption" color="error" sx={{ fontFamily: 'monospace' }}>
-                  {this.state.error && this.state.error.toString()}
-                </Typography>
-                <br />
-                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-                  {this.state.errorInfo && this.state.errorInfo.componentStack}
-                </Typography>
-              </Box>
-            )}
           </Paper>
         </Box>
       );

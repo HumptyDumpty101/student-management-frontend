@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
@@ -6,20 +7,19 @@ import { store } from './store';
 import { getCurrentUser } from './store/slices/authSlice';
 import { tokenStorage } from './utils/tokenStorage';
 
+// Layout
+import { Layout } from './components/layout';
+
 // Pages
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import StudentsPage from './pages/StudentsPage';
-import StaffPage from './pages/StaffPage';
-import ProfilePage from './pages/ProfilePage';
-import UnauthorizedPage from './pages/UnauthorizedPage';
+import LoginPage from './pages/auth/LoginPage';
+import UnauthorizedPage from './pages/auth/UnauthorizedPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
+import { StudentsPage } from './pages/students';
+import { StaffPage } from './pages/staff';
+import ProfilePage from './pages/profile/ProfilePage';
 
 // Components
-import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
-import ErrorBoundary from './components/ErrorBoundary';
-import GlobalSnackbar from './components/GlobalSnackbar';
-import LoadingScreen from './components/LoadingScreen';
+import { ProtectedRoute, ErrorBoundary, GlobalSnackbar, LoadingScreen } from './components/common';
 
 const theme = createTheme({
   palette: {
@@ -113,7 +113,7 @@ const AppRoutes = () => {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route
-          path="students/*"
+          path="students"
           element={
             <ProtectedRoute requiredPermission="students.read">
               <StudentsPage />
@@ -121,7 +121,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="staff/*"
+          path="staff"
           element={
             <ProtectedRoute requiredRole="superAdmin">
               <StaffPage />

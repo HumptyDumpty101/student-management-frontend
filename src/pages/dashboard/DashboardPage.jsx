@@ -17,9 +17,9 @@ import {
   Paper
 } from '@mui/material';
 import { PersonAdd, Add, Download, School, People } from '@mui/icons-material';
-import { fetchStudents } from '../store/slices/studentSlice';
-import { fetchStaff } from '../store/slices/staffSlice';
-import { openDialog } from '../store/slices/uiSlice';
+import { fetchStudents } from '../../store/slices/studentSlice';
+import { fetchStaff } from '../../store/slices/staffSlice';
+import { openDialog } from '../../store/slices/uiSlice';
 
 const DashboardPage = () => {
   const dispatch = useDispatch();

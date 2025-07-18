@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Snackbar, Alert, Slide } from '@mui/material';
-import { hideSnackbar } from '../store/slices/uiSlice';
+import { hideSnackbar } from '../../store/slices/uiSlice';
 
 const SlideTransition = (props) => {
   return <Slide {...props} direction="left" />;

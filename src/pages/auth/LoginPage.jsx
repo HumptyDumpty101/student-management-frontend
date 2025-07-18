@@ -14,9 +14,9 @@ import {
   IconButton
 } from '@mui/material';
 import { Visibility, VisibilityOff, School } from '@mui/icons-material';
-import { loginUser } from '../store/slices/authSlice';
-import { showSnackbar } from '../store/slices/uiSlice';
-import { loginValidationSchema } from '../utils/validation';
+import { loginUser } from '../../store/slices/authSlice';
+import { showSnackbar } from '../../store/slices/uiSlice';
+import { loginValidationSchema } from '../../utils/validation';
 
 const LoginPage = () => {
   const dispatch = useDispatch();
@@ -68,7 +68,6 @@ const LoginPage = () => {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear validation error when user starts typing
     if (validationErrors[field]) {
       setValidationErrors(prev => ({ ...prev, [field]: '' }));
     }
