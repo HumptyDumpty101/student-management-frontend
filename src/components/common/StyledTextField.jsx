@@ -30,7 +30,9 @@ const StyledTextField = ({
   // Additional styling for select fields
   const selectSx = select ? {
     '& .MuiInputLabel-root': {
-      transform: 'translate(14px, 16px) scale(1)',
+      // Always keep label in shrunk position for select fields with displayEmpty
+      transform: 'translate(14px, -9px) scale(0.75)',
+      transformOrigin: 'top left',
       '&.MuiInputLabel-shrink': {
         transform: 'translate(14px, -9px) scale(0.75)',
       },

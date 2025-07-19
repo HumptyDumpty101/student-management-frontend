@@ -1,16 +1,40 @@
 class TokenStorage {
   constructor() {
-    this.storageKey = 'refreshToken';
+    this.accessTokenKey = 'accessToken';
+    this.refreshTokenKey = 'refreshToken';
     this.userKey = 'user';
+  }
+
+  // Store access token securely
+  setAccessToken(token) {
+    try {
+      if (token) {
+        localStorage.setItem(this.accessTokenKey, token);
+      } else {
+        localStorage.removeItem(this.accessTokenKey);
+      }
+    } catch (error) {
+      console.error('Failed to store access token:', error);
+    }
+  }
+
+  // Get access token
+  getAccessToken() {
+    try {
+      return localStorage.getItem(this.accessTokenKey);
+    } catch (error) {
+      console.error('Failed to retrieve access token:', error);
+      return null;
+    }
   }
 
   // Store refresh token securely
   setRefreshToken(token) {
     try {
       if (token) {
-        localStorage.setItem(this.storageKey, token);
+        localStorage.setItem(this.refreshTokenKey, token);
       } else {
-        localStorage.removeItem(this.storageKey);
+        localStorage.removeItem(this.refreshTokenKey);
       }
     } catch (error) {
       console.error('Failed to store refresh token:', error);
@@ -20,7 +44,7 @@ class TokenStorage {
   // Get refresh token
   getRefreshToken() {
     try {
-      return localStorage.getItem(this.storageKey);
+      return localStorage.getItem(this.refreshTokenKey);
     } catch (error) {
       console.error('Failed to retrieve refresh token:', error);
       return null;
@@ -54,7 +78,8 @@ class TokenStorage {
   // Clear all stored data
   clear() {
     try {
-      localStorage.removeItem(this.storageKey);
+      localStorage.removeItem(this.accessTokenKey);
+      localStorage.removeItem(this.refreshTokenKey);
       localStorage.removeItem(this.userKey);
     } catch (error) {
       console.error('Failed to clear storage:', error);

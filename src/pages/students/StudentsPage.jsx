@@ -14,7 +14,7 @@ import {
   Chip
 } from '@mui/material';
 import { Search, Add, FilterList } from '@mui/icons-material';
-import { StudentList, StudentForm } from '../../components/students';
+import { StudentList, StudentForm, StudentDetails } from '../../components/students';
 import { ConfirmDialog, StyledTextField } from '../../components/common';
 import { 
   fetchStudents, 
@@ -52,24 +52,16 @@ const StudentsPage = () => {
   };
 
   const handleCreateStudent = async (studentData) => {
-    try {
-      await dispatch(createStudent(studentData)).unwrap();
-      dispatch(showSnackbar({ message: 'Student created successfully', severity: 'success' }));
-      dispatch(closeDialog('addStudent'));
-    } catch (error) {
-      dispatch(showSnackbar({ message: error, severity: 'error' }));
-    }
+    await dispatch(createStudent(studentData)).unwrap();
+    dispatch(showSnackbar({ message: 'Student created successfully', severity: 'success' }));
+    // Form will handle closing the dialog
   };
 
   const handleUpdateStudent = async (studentData) => {
-    try {
-      await dispatch(updateStudent({ id: selectedStudent._id, data: studentData })).unwrap();
-      dispatch(showSnackbar({ message: 'Student updated successfully', severity: 'success' }));
-      dispatch(closeDialog('editStudent'));
-      setSelectedStudent(null);
-    } catch (error) {
-      dispatch(showSnackbar({ message: error, severity: 'error' }));
-    }
+    await dispatch(updateStudent({ id: selectedStudent._id, data: studentData })).unwrap();
+    dispatch(showSnackbar({ message: 'Student updated successfully', severity: 'success' }));
+    setSelectedStudent(null);
+    // Form will handle closing the dialog
   };
 
   const handleDeleteStudent = async () => {
@@ -110,9 +102,26 @@ const StudentsPage = () => {
   };
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight="bold">
+    <Box sx={{ 
+      width: '100%', 
+      maxWidth: '100vw',
+      p: { xs: 1, sm: 2, md: 3 },
+      overflowX: 'hidden',
+      boxSizing: 'border-box'
+    }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'stretch', sm: 'center' },
+        flexDirection: { xs: 'column', sm: 'row' },
+        gap: { xs: 2, sm: 0 },
+        mb: 3 
+      }}>
+        <Typography 
+          variant="h4" 
+          fontWeight="bold"
+          sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}
+        >
           Students Management
         </Typography>
         {canCreate && (
@@ -120,6 +129,10 @@ const StudentsPage = () => {
             variant="contained"
             startIcon={<Add />}
             onClick={() => dispatch(openDialog('addStudent'))}
+            sx={{ 
+              alignSelf: { xs: 'stretch', sm: 'auto' },
+              py: { xs: 1.5, sm: 1 }
+            }}
           >
             Add Student
           </Button>
@@ -128,8 +141,8 @@ const StudentsPage = () => {
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} md={4}>
+          <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="center">
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
                 placeholder="Search students..."
@@ -144,12 +157,12 @@ const StudentsPage = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <StyledTextField
                 select
                 fullWidth
                 label="Standard"
-                value={filters.standard}
+                value={filters.standard || ''}
                 onChange={(e) => handleFilterChange('standard', e.target.value)}
               >
                 <MenuItem value="">All Standards</MenuItem>
@@ -158,12 +171,12 @@ const StudentsPage = () => {
                 ))}
               </StyledTextField>
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <StyledTextField
                 select
                 fullWidth
                 label="Section"
-                value={filters.section}
+                value={filters.section || ''}
                 onChange={(e) => handleFilterChange('section', e.target.value)}
               >
                 <MenuItem value="">All Sections</MenuItem>
@@ -172,12 +185,12 @@ const StudentsPage = () => {
                 ))}
               </StyledTextField>
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <StyledTextField
                 select
                 fullWidth
                 label="Sort By"
-                value={filters.sortBy}
+                value={filters.sortBy || 'createdAt'}
                 onChange={(e) => handleFilterChange('sortBy', e.target.value)}
               >
                 <MenuItem value="createdAt">Created Date</MenuItem>
@@ -186,8 +199,13 @@ const StudentsPage = () => {
                 <MenuItem value="standard">Standard</MenuItem>
               </StyledTextField>
             </Grid>
-            <Grid item xs={12} md={2}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Grid size={{ xs: 12, md: 2 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: { xs: 'center', md: 'flex-start' },
+                gap: 1 
+              }}>
                 <Chip
                   label={`${pagination.totalStudents} Students`}
                   color="primary"
@@ -199,23 +217,39 @@ const StudentsPage = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent>
-          <StudentList
-            students={students}
-            onView={handleViewStudent}
-            onEdit={handleEditStudent}
-            onDelete={handleDeleteClick}
-            userPermissions={userPermissions}
-          />
+      <Card sx={{ overflow: 'hidden' }}>
+        <CardContent sx={{ 
+          p: { xs: 1, sm: 2, md: 3 },
+          '&:last-child': { pb: { xs: 1, sm: 2, md: 3 } }
+        }}>
+          <Box sx={{ 
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+            position: 'relative'
+          }}>
+            <StudentList
+              students={students}
+              onView={handleViewStudent}
+              onEdit={handleEditStudent}
+              onDelete={handleDeleteClick}
+              userPermissions={userPermissions}
+            />
+          </Box>
           
           {pagination.totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              mt: 3,
+              px: { xs: 1, sm: 0 }
+            }}>
               <Pagination
                 count={pagination.totalPages}
                 page={pagination.currentPage}
                 onChange={handlePageChange}
                 color="primary"
+                size={{ xs: 'small', sm: 'medium' }}
               />
             </Box>
           )}
@@ -240,6 +274,16 @@ const StudentsPage = () => {
         onSubmit={handleUpdateStudent}
         student={selectedStudent}
         loading={actionLoading.update}
+      />
+
+      {/* Student Details Dialog */}
+      <StudentDetails
+        open={dialogs.studentDetails}
+        onClose={() => {
+          dispatch(closeDialog('studentDetails'));
+          setSelectedStudent(null);
+        }}
+        student={selectedStudent}
       />
 
       {/* Delete Confirmation */}

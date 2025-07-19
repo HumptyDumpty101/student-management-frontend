@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { store } from './store';
-import { getCurrentUser, setInitialized, clearAuth } from './store/slices/authSlice';
+import { getCurrentUser, setInitialized, clearAuth, refreshToken } from './store/slices/authSlice';
 import { createStudent } from './store/slices/studentSlice';
 import { createStaff } from './store/slices/staffSlice';
 import { showSnackbar, closeDialog } from './store/slices/uiSlice';
@@ -62,20 +62,32 @@ const AppInitializer = ({ children }) => {
 
   useEffect(() => {
     const initializeApp = async () => {
-      const refreshToken = tokenStorage.getRefreshToken();
+      const accessToken = tokenStorage.getAccessToken();
+      const storedRefreshToken = tokenStorage.getRefreshToken();
       const storedUser = tokenStorage.getUser();
 
-      if (refreshToken) {
+      if (accessToken && storedRefreshToken) {
         try {
-          // If we have a refresh token, try to get current user data
+          // If we have both tokens, try to get current user data
           await dispatch(getCurrentUser()).unwrap();
         } catch (error) {
           // If getting current user fails, clear stored data and mark as initialized
           console.warn('Failed to get current user on initialization:', error);
           dispatch(clearAuth());
+          tokenStorage.clear();
+        }
+      } else if (storedRefreshToken && !accessToken) {
+        // We have refresh token but no access token, try to refresh
+        try {
+          await dispatch(refreshToken(storedRefreshToken)).unwrap();
+          await dispatch(getCurrentUser()).unwrap();
+        } catch (error) {
+          console.warn('Failed to refresh token on initialization:', error);
+          dispatch(clearAuth());
+          tokenStorage.clear();
         }
       } else {
-        // No stored refresh token, mark as initialized
+        // No stored tokens, mark as initialized
         dispatch(setInitialized());
       }
     };
@@ -154,11 +166,15 @@ const AppModals = () => {
   const { dialogs } = useSelector(state => state.ui);
 
   const handleStudentSubmit = async (studentData) => {
+    console.log('App.jsx: handleStudentSubmit called with data:', studentData);
     try {
+      console.log('App.jsx: Dispatching createStudent action');
       await dispatch(createStudent(studentData)).unwrap();
+      console.log('App.jsx: Student created successfully');
       dispatch(showSnackbar({ message: 'Student created successfully', severity: 'success' }));
       dispatch(closeDialog('addStudent'));
     } catch (error) {
+      console.error('App.jsx: Error creating student:', error);
       dispatch(showSnackbar({ message: error || 'Failed to create student', severity: 'error' }));
     }
   };

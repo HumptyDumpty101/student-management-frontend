@@ -8,16 +8,22 @@ import {
   Card,
   CardContent,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  Paper
+  Paper,
+  Avatar,
+  LinearProgress,
+  Divider
 } from '@mui/material';
-import { PersonAdd, Add, Download, School, People, Lock } from '@mui/icons-material';
+import { 
+  PersonAdd, 
+  Add, 
+  Download, 
+  School, 
+  People, 
+  TrendingUp,
+  Assessment,
+  Dashboard,
+  CalendarToday
+} from '@mui/icons-material';
 import { fetchStudents } from '../../store/slices/studentSlice';
 import { fetchStaff } from '../../store/slices/staffSlice';
 import { openDialog } from '../../store/slices/uiSlice';
@@ -72,230 +78,342 @@ const DashboardPage = () => {
     }
   };
 
-  const renderStudentTable = () => {
-    if (!checkPermission('students', 'read')) {
-      return (
-        <Card sx={{ opacity: 0.6, backgroundColor: '#f5f5f5' }}>
-          <CardContent>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: 200,
-                color: 'text.secondary'
-              }}
-            >
-              <Lock sx={{ fontSize: 48, mb: 2 }} />
-              <Typography variant="h6" align="center">
-                No Permission
-              </Typography>
-              <Typography variant="body2" align="center">
-                You don't have permission to view students
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    return (
-      <Card sx={{ height: '100%' }}>
-        <CardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Student Records {totalStudents > 0 && `(${Math.min(10, students.length)} of ${totalStudents})`}
-            </Typography>
-            <Button
-              variant="contained"
-              size="medium"
-              onClick={() => navigate('/students')}
-              sx={{ borderRadius: 2 }}
-            >
-              View All Students
-            </Button>
-          </Box>
-          <TableContainer 
-            component={Paper} 
-            variant="outlined" 
-            sx={{ 
-              borderRadius: 2,
-              maxHeight: 600,
-              overflow: 'auto'
-            }}
-          >
-            <Table stickyHeader>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 600, backgroundColor: 'grey.50' }}>Student ID</TableCell>
-                  <TableCell sx={{ fontWeight: 600, backgroundColor: 'grey.50' }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 600, backgroundColor: 'grey.50' }}>Standard</TableCell>
-                  <TableCell sx={{ fontWeight: 600, backgroundColor: 'grey.50' }}>Grade</TableCell>
-                  <TableCell sx={{ fontWeight: 600, backgroundColor: 'grey.50' }}>Status</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {studentsLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Loading students...
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : students.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        No students found
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  students.slice(0, 10).map((student) => (
-                    <TableRow 
-                      key={student._id} 
-                      hover 
-                      sx={{ 
-                        '&:hover': { 
-                          backgroundColor: 'action.hover',
-                          cursor: 'pointer'
-                        }
-                      }}
-                    >
-                      <TableCell sx={{ fontWeight: 500 }}>{student.studentId}</TableCell>
-                      <TableCell sx={{ fontWeight: 500 }}>
-                        {`${student.name.firstName} ${student.name.lastName}`}
-                      </TableCell>
-                      <TableCell>
-                        <Chip 
-                          label={`${student.standard}-${student.section}`} 
-                          size="small" 
-                          variant="outlined"
-                          sx={{ borderRadius: 1 }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip 
-                          label={student.overallGrade} 
-                          size="small" 
-                          color="primary" 
-                          variant="outlined"
-                          sx={{ borderRadius: 1 }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip 
-                          label={student.isActive ? 'Active' : 'Inactive'} 
-                          size="small" 
-                          color={student.isActive ? 'success' : 'error'}
-                          sx={{ borderRadius: 1 }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-    );
+  const getCurrentDate = () => {
+    return new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
+
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%' }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom fontWeight="bold">
-          {getGreeting()}, {user?.name?.firstName || user?.fullName || 'User'}!
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Welcome to your dashboard
-        </Typography>
-      </Box>
+    <Box sx={{ 
+      width: '100%', 
+      maxWidth: '100%',
+      p: { xs: 1, sm: 2, md: 3 },
+      minHeight: '100vh',
+      bgcolor: 'grey.50'
+    }}>
+      {/* Header Section */}
+      <Paper 
+        elevation={0}
+        sx={{ 
+          p: { xs: 2, sm: 3, md: 4 }, 
+          mb: 3,
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={8}>
+              <Typography 
+                variant="h3" 
+                fontWeight="bold" 
+                sx={{ 
+                  fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' },
+                  mb: 1
+                }}
+              >
+                {getGreeting()}, {user?.name?.firstName || user?.fullName || 'User'}!
+              </Typography>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  opacity: 0.9,
+                  fontSize: { xs: '1rem', sm: '1.25rem' },
+                  mb: 1
+                }}
+              >
+                Welcome to your Student Management Dashboard
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: 0.8 }}>
+                <CalendarToday sx={{ fontSize: '1rem' }} />
+                <Typography variant="body2">
+                  {getCurrentDate()}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: { xs: 'center', md: 'flex-end' },
+                mt: { xs: 2, md: 0 }
+              }}>
+                <Avatar 
+                  sx={{ 
+                    width: { xs: 80, sm: 120 }, 
+                    height: { xs: 80, sm: 120 },
+                    fontSize: { xs: '2rem', sm: '3rem' },
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    border: '3px solid rgba(255,255,255,0.3)'
+                  }}
+                >
+                  <Dashboard sx={{ fontSize: 'inherit' }} />
+                </Avatar>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+        <Box 
+          sx={{ 
+            position: 'absolute',
+            top: -50,
+            right: -50,
+            width: 200,
+            height: 200,
+            borderRadius: '50%',
+            bgcolor: 'rgba(255,255,255,0.1)',
+            zIndex: 0
+          }} 
+        />
+      </Paper>
 
       {/* Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 4 }}>
         {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card sx={{ height: '100%' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography variant="h4" fontWeight="bold" color={`${stat.color}.main`}>
-                      {stat.value}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {stat.title}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ color: `${stat.color}.main`, fontSize: 40 }}>
+          <Grid item xs={12} sm={6} lg={3} key={index}>
+            <Card 
+              sx={{ 
+                height: '100%',
+                borderRadius: 3,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
+                }
+              }}
+            >
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Box 
+                    sx={{ 
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: `${stat.color}.50`,
+                      color: `${stat.color}.main`
+                    }}
+                  >
                     {stat.icon}
                   </Box>
+                  <TrendingUp sx={{ color: 'success.main', fontSize: 20 }} />
                 </Box>
+                <Typography 
+                  variant="h3" 
+                  fontWeight="bold" 
+                  color={`${stat.color}.main`}
+                  sx={{ fontSize: { xs: '2rem', sm: '2.5rem' } }}
+                >
+                  {stat.value}
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                  {stat.title}
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={Math.min((stat.value / 100) * 100, 100)}
+                  sx={{ 
+                    mt: 2, 
+                    height: 6, 
+                    borderRadius: 3,
+                    bgcolor: `${stat.color}.100`,
+                    '& .MuiLinearProgress-bar': {
+                      bgcolor: `${stat.color}.main`,
+                      borderRadius: 3
+                    }
+                  }}
+                />
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      {/* Quick Actions Row */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Quick Actions
-              </Typography>
-              <Box sx={{ 
-                display: 'flex', 
-                flexDirection: { xs: 'column', sm: 'row' }, 
-                gap: 2,
-                justifyContent: 'flex-start'
-              }}>
-                {checkPermission('students', 'create') && (
-                  <Button
-                    variant="contained"
-                    startIcon={<PersonAdd />}
-                    size="large"
-                    onClick={() => dispatch(openDialog('addStudent'))}
-                    sx={{ minWidth: 200 }}
-                  >
-                    Add New Student
-                  </Button>
-                )}
-                {checkPermission('staff', 'create') && (
-                  <Button
-                    variant="outlined"
-                    startIcon={<Add />}
-                    size="large"
-                    onClick={() => dispatch(openDialog('addStaff'))}
-                    sx={{ minWidth: 200 }}
-                  >
-                    Add New Staff
-                  </Button>
-                )}
+      {/* Quick Actions */}
+      <Card 
+        sx={{ 
+          mb: 4,
+          borderRadius: 3,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        }}
+      >
+        <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+            <Box 
+              sx={{ 
+                p: 1.5,
+                borderRadius: 2,
+                bgcolor: 'primary.50',
+                color: 'primary.main'
+              }}
+            >
+              <Assessment />
+            </Box>
+            <Typography variant="h5" fontWeight="600">
+              Quick Actions
+            </Typography>
+          </Box>
+          <Divider sx={{ mb: 3 }} />
+          <Grid container spacing={{ xs: 2, sm: 3 }}>
+            {checkPermission('students', 'create') && (
+              <Grid item xs={12} sm={6} md={4}>
+                <Button
+                  variant="contained"
+                  startIcon={<PersonAdd />}
+                  size="large"
+                  fullWidth
+                  onClick={() => dispatch(openDialog('addStudent'))}
+                  sx={{ 
+                    py: 2,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontSize: '1.1rem',
+                    fontWeight: 600
+                  }}
+                >
+                  Add New Student
+                </Button>
+              </Grid>
+            )}
+            {checkPermission('staff', 'create') && (
+              <Grid item xs={12} sm={6} md={4}>
                 <Button
                   variant="outlined"
-                  startIcon={<Download />}
+                  startIcon={<Add />}
                   size="large"
-                  onClick={handleExportReports}
-                  sx={{ minWidth: 200 }}
+                  fullWidth
+                  onClick={() => dispatch(openDialog('addStaff'))}
+                  sx={{ 
+                    py: 2,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontSize: '1.1rem',
+                    fontWeight: 600
+                  }}
                 >
-                  Export Reports
+                  Add New Staff
                 </Button>
+              </Grid>
+            )}
+            <Grid item xs={12} sm={6} md={4}>
+              <Button
+                variant="outlined"
+                startIcon={<Download />}
+                size="large"
+                fullWidth
+                onClick={handleExportReports}
+                sx={{ 
+                  py: 2,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontSize: '1.1rem',
+                  fontWeight: 600
+                }}
+              >
+                Export Reports
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Navigation Cards */}
+      <Grid container spacing={{ xs: 2, sm: 3 }}>
+        <Grid item xs={12} sm={6}>
+          <Card 
+            sx={{ 
+              height: '100%',
+              borderRadius: 3,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
+              }
+            }}
+            onClick={() => navigate('/students')}
+          >
+            <CardContent sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
+              <Box 
+                sx={{ 
+                  p: 3,
+                  borderRadius: 3,
+                  bgcolor: 'primary.50',
+                  color: 'primary.main',
+                  display: 'inline-flex',
+                  mb: 2
+                }}
+              >
+                <School sx={{ fontSize: 40 }} />
               </Box>
+              <Typography variant="h5" fontWeight="600" sx={{ mb: 1 }}>
+                Manage Students
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                View, add, edit, and manage all student records
+              </Typography>
+              <Typography variant="h4" fontWeight="bold" color="primary.main">
+                {totalStudents}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Total Students
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
-      </Grid>
-
-      {/* Student Table - Full Width */}
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          {renderStudentTable()}
-        </Grid>
+        
+        {user?.role === 'superAdmin' && (
+          <Grid item xs={12} sm={6}>
+            <Card 
+              sx={{ 
+                height: '100%',
+                borderRadius: 3,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
+                }
+              }}
+              onClick={() => navigate('/staff')}
+            >
+              <CardContent sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
+                <Box 
+                  sx={{ 
+                    p: 3,
+                    borderRadius: 3,
+                    bgcolor: 'secondary.50',
+                    color: 'secondary.main',
+                    display: 'inline-flex',
+                    mb: 2
+                  }}
+                >
+                  <People sx={{ fontSize: 40 }} />
+                </Box>
+                <Typography variant="h5" fontWeight="600" sx={{ mb: 1 }}>
+                  Manage Staff
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                  View, add, edit, and manage all staff members
+                </Typography>
+                <Typography variant="h4" fontWeight="bold" color="secondary.main">
+                  {totalStaff}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total Staff
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
       </Grid>
     </Box>
   );

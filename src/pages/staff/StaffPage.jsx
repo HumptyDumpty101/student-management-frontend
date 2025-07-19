@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Search, Add } from '@mui/icons-material';
 import { ConfirmDialog, StyledTextField } from '../../components/common';
+import { StaffForm, StaffList } from '../../components/staff';
 import { 
   fetchStaff, 
   createStaff, 
@@ -50,24 +51,16 @@ const StaffPage = () => {
   };
 
   const handleCreateStaff = async (staffData) => {
-    try {
-      await dispatch(createStaff(staffData)).unwrap();
-      dispatch(showSnackbar({ message: 'Staff member created successfully', severity: 'success' }));
-      dispatch(closeDialog('addStaff'));
-    } catch (error) {
-      dispatch(showSnackbar({ message: error, severity: 'error' }));
-    }
+    await dispatch(createStaff(staffData)).unwrap();
+    dispatch(showSnackbar({ message: 'Staff member created successfully', severity: 'success' }));
+    // Form will handle closing the dialog
   };
 
   const handleUpdateStaff = async (staffData) => {
-    try {
-      await dispatch(updateStaff({ id: selectedStaff._id, data: staffData })).unwrap();
-      dispatch(showSnackbar({ message: 'Staff member updated successfully', severity: 'success' }));
-      dispatch(closeDialog('editStaff'));
-      setSelectedStaff(null);
-    } catch (error) {
-      dispatch(showSnackbar({ message: error, severity: 'error' }));
-    }
+    await dispatch(updateStaff({ id: selectedStaff._id, data: staffData })).unwrap();
+    dispatch(showSnackbar({ message: 'Staff member updated successfully', severity: 'success' }));
+    setSelectedStaff(null);
+    // Form will handle closing the dialog
   };
 
   const handleDeleteStaff = async () => {
@@ -80,16 +73,60 @@ const StaffPage = () => {
     }
   };
 
+  const handleViewStaff = (staff) => {
+    setSelectedStaff(staff);
+    dispatch(openDialog('staffDetails'));
+  };
+
+  const handleEditStaff = (staff) => {
+    setSelectedStaff(staff);
+    dispatch(openDialog('editStaff'));
+  };
+
+  const handleDeleteClick = (staff) => {
+    setConfirmDialog({ open: true, staff });
+  };
+
+  const userPermissions = {
+    staff: {
+      create: true,
+      read: true,
+      update: true,
+      delete: true
+    }
+  };
+
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight="bold">
+    <Box sx={{ 
+      width: '100%', 
+      maxWidth: '100vw',
+      p: { xs: 1, sm: 2, md: 3 },
+      overflowX: 'hidden',
+      boxSizing: 'border-box'
+    }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'stretch', sm: 'center' },
+        flexDirection: { xs: 'column', sm: 'row' },
+        gap: { xs: 2, sm: 0 },
+        mb: 3 
+      }}>
+        <Typography 
+          variant="h4" 
+          fontWeight="bold"
+          sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}
+        >
           Staff Management
         </Typography>
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={() => dispatch(openDialog('addStaff'))}
+          sx={{ 
+            alignSelf: { xs: 'stretch', sm: 'auto' },
+            py: { xs: 1.5, sm: 1 }
+          }}
         >
           Add Staff
         </Button>
@@ -97,8 +134,8 @@ const StaffPage = () => {
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} md={4}>
+          <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="center">
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
                 placeholder="Search staff..."
@@ -113,12 +150,12 @@ const StaffPage = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <StyledTextField
                 select
                 fullWidth
                 label="Department"
-                value={filters.department}
+                value={filters.department || ''}
                 onChange={(e) => handleFilterChange('department', e.target.value)}
               >
                 <MenuItem value="">All Departments</MenuItem>
@@ -127,7 +164,7 @@ const StaffPage = () => {
                 ))}
               </StyledTextField>
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <StyledTextField
                 select
                 fullWidth
@@ -140,25 +177,82 @@ const StaffPage = () => {
                 <MenuItem value="false">Inactive</MenuItem>
               </StyledTextField>
             </Grid>
-            <Grid item xs={12} md={2}>
-              <Chip
-                label={`${pagination.totalStaff} Staff`}
-                color="primary"
-                variant="outlined"
-              />
+            <Grid size={{ xs: 12, md: 2 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: { xs: 'center', md: 'flex-start' },
+                gap: 1 
+              }}>
+                <Chip
+                  label={`${pagination.totalStaff} Staff`}
+                  color="primary"
+                  variant="outlined"
+                />
+              </Box>
             </Grid>
           </Grid>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Staff List
-          </Typography>
-          {/* Staff list component would go here */}
+      <Card sx={{ overflow: 'hidden' }}>
+        <CardContent sx={{ 
+          p: { xs: 1, sm: 2, md: 3 },
+          '&:last-child': { pb: { xs: 1, sm: 2, md: 3 } }
+        }}>
+          <Box sx={{ 
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+            position: 'relative'
+          }}>
+            <StaffList
+              staff={staff}
+              onView={handleViewStaff}
+              onEdit={handleEditStaff}
+              onDelete={handleDeleteClick}
+              userPermissions={userPermissions}
+            />
+          </Box>
+          
+          {pagination.totalPages > 1 && (
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              mt: 3,
+              px: { xs: 1, sm: 0 }
+            }}>
+              <Pagination
+                count={pagination.totalPages}
+                page={pagination.currentPage}
+                onChange={handlePageChange}
+                color="primary"
+                size={{ xs: 'small', sm: 'medium' }}
+              />
+            </Box>
+          )}
         </CardContent>
       </Card>
+
+      {/* Add Staff Dialog */}
+      <StaffForm
+        open={dialogs.addStaff}
+        onClose={() => dispatch(closeDialog('addStaff'))}
+        onSubmit={handleCreateStaff}
+        loading={actionLoading.create}
+      />
+
+      {/* Edit Staff Dialog */}
+      <StaffForm
+        open={dialogs.editStaff}
+        onClose={() => {
+          dispatch(closeDialog('editStaff'));
+          setSelectedStaff(null);
+        }}
+        onSubmit={handleUpdateStaff}
+        staff={selectedStaff}
+        loading={actionLoading.update}
+      />
 
       <ConfirmDialog
         open={confirmDialog.open}

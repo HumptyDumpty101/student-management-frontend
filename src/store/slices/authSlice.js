@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import apiClient from '../../utils/apiClient';
+import { tokenStorage } from '../../utils/tokenStorage';
 
 // Async thunks
 export const loginUser = createAsyncThunk(
@@ -74,6 +75,7 @@ export const changePassword = createAsyncThunk(
 
 const initialState = {
   user: null,
+  accessToken: localStorage.getItem('accessToken'),
   refreshToken: localStorage.getItem('refreshToken'),
   isAuthenticated: false, // Don't assume authentication until user data is verified
   loading: false,
@@ -93,11 +95,22 @@ const authSlice = createSlice({
     },
     clearAuth: (state) => {
       state.user = null;
+      state.accessToken = null;
       state.refreshToken = null;
       state.isAuthenticated = false;
       state.error = null;
       state.isInitialized = true;
-      localStorage.removeItem('refreshToken');
+      tokenStorage.clear();
+    },
+    updateTokens: (state, action) => {
+      state.accessToken = action.payload.accessToken;
+      if (action.payload.refreshToken) {
+        state.refreshToken = action.payload.refreshToken;
+      }
+      tokenStorage.setAccessToken(action.payload.accessToken);
+      if (action.payload.refreshToken) {
+        tokenStorage.setRefreshToken(action.payload.refreshToken);
+      }
     },
   },
   extraReducers: (builder) => {
@@ -110,9 +123,12 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
+        state.accessToken = action.payload.accessToken;
         state.refreshToken = action.payload.refreshToken;
         state.isAuthenticated = true;
-        localStorage.setItem('refreshToken', action.payload.refreshToken);
+        tokenStorage.setAccessToken(action.payload.accessToken);
+        tokenStorage.setRefreshToken(action.payload.refreshToken);
+        tokenStorage.setUser(action.payload.user);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -121,14 +137,19 @@ const authSlice = createSlice({
       })
       // Refresh Token
       .addCase(refreshToken.fulfilled, (state, action) => {
-        state.refreshToken = action.payload.refreshToken;
-        localStorage.setItem('refreshToken', action.payload.refreshToken);
+        state.accessToken = action.payload.accessToken;
+        if (action.payload.refreshToken) {
+          state.refreshToken = action.payload.refreshToken;
+          tokenStorage.setRefreshToken(action.payload.refreshToken);
+        }
+        tokenStorage.setAccessToken(action.payload.accessToken);
       })
       .addCase(refreshToken.rejected, (state) => {
         state.user = null;
+        state.accessToken = null;
         state.refreshToken = null;
         state.isAuthenticated = false;
-        localStorage.removeItem('refreshToken');
+        tokenStorage.clear();
       })
       // Get Current User
       .addCase(getCurrentUser.pending, (state) => {
@@ -145,14 +166,15 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         state.isInitialized = true;
-        localStorage.removeItem('refreshToken');
+        tokenStorage.clear();
       })
       // Logout
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
+        state.accessToken = null;
         state.refreshToken = null;
         state.isAuthenticated = false;
-        localStorage.removeItem('refreshToken');
+        tokenStorage.clear();
       })
       // Change Password
       .addCase(changePassword.pending, (state) => {
@@ -162,9 +184,10 @@ const authSlice = createSlice({
       .addCase(changePassword.fulfilled, (state) => {
         state.loading = false;
         state.user = null;
+        state.accessToken = null;
         state.refreshToken = null;
         state.isAuthenticated = false;
-        localStorage.removeItem('refreshToken');
+        tokenStorage.clear();
       })
       .addCase(changePassword.rejected, (state, action) => {
         state.loading = false;
@@ -173,5 +196,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, setInitialized, clearAuth } = authSlice.actions;
+export const { clearError, setInitialized, clearAuth, updateTokens } = authSlice.actions;
 export default authSlice.reducer;

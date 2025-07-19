@@ -14,6 +14,14 @@ const apiClient = axios.create({
 // Request interceptor - handles auth headers
 apiClient.interceptors.request.use(
   (config) => {
+    // Add access token to requests
+    const state = store.getState();
+    const accessToken = state.auth.accessToken || localStorage.getItem('accessToken');
+    
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    
     // For file uploads, don't set Content-Type (let browser set it)
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
@@ -56,7 +64,9 @@ apiClient.interceptors.response.use(
       error.response?.status === 401 &&
       (error.response?.data?.message === 'Access token has expired' || 
        error.response?.data?.message === 'Invalid token' ||
-       error.response?.data?.message === 'jwt expired') &&
+       error.response?.data?.message === 'jwt expired' ||
+       error.response?.data?.message === 'Token expired' ||
+       error.response?.data?.error === 'jwt expired') &&
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
@@ -71,16 +81,37 @@ apiClient.interceptors.response.use(
         }
 
         if (currentRefreshToken) {
-          await store.dispatch(refreshToken(currentRefreshToken)).unwrap();
+          const refreshResult = await store.dispatch(refreshToken(currentRefreshToken)).unwrap();
+          
+          // Update the original request with the new access token
+          originalRequest.headers.Authorization = `Bearer ${refreshResult.accessToken}`;
+          
+          // Retry the original request
           return apiClient(originalRequest);
+        } else {
+          // No refresh token available, clear auth and redirect
+          store.dispatch(clearAuth());
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+          return Promise.reject(error);
         }
       } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
         store.dispatch(clearAuth());
         // Only redirect to login if not already on login page
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
         return Promise.reject(refreshError);
+      }
+    }
+
+    // Handle other 401 errors (like invalid refresh token)
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      store.dispatch(clearAuth());
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
       }
     }
 

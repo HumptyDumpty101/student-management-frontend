@@ -161,10 +161,10 @@ const LoginPage = () => {
               Demo Credentials:
             </Typography>
             <Typography variant="caption" display="block" color="text.secondary">
-              Super Admin: admin@school.com / password123
+              Super Admin: admin@schoolmanagement.com / admin123456
             </Typography>
             <Typography variant="caption" display="block" color="text.secondary">
-              Staff: staff@school.com / password123
+              Staff: staff@schoolmanagement.com / staff123456
             </Typography>
           </Box>
         </CardContent>

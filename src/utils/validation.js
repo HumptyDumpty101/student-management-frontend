@@ -57,8 +57,20 @@ export const studentValidationSchema = yup.object({
         .required('Relationship is required'),
       phone: yup
         .string()
-        .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
-        .required('Emergency contact phone is required'),
+        .required('Emergency contact phone is required')
+        .test('phone-validation', function(value) {
+          if (!value) return true;
+          if (!/^[0-9]+$/.test(value)) {
+            return this.createError({ message: 'Phone number must contain only digits' });
+          }
+          if (value.length < 10) {
+            return this.createError({ message: 'Phone number must be at least 10 digits' });
+          }
+          if (value.length > 10) {
+            return this.createError({ message: 'Phone number cannot exceed 10 digits' });
+          }
+          return true;
+        }),
     }),
   }),
   parentInfo: yup.object({
@@ -66,16 +78,40 @@ export const studentValidationSchema = yup.object({
       name: yup.string().required('Father name is required'),
       phone: yup
         .string()
-        .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
-        .required('Father phone is required'),
+        .required('Father phone is required')
+        .test('phone-validation', function(value) {
+          if (!value) return true;
+          if (!/^[0-9]+$/.test(value)) {
+            return this.createError({ message: 'Phone number must contain only digits' });
+          }
+          if (value.length < 10) {
+            return this.createError({ message: 'Phone number must be at least 10 digits' });
+          }
+          if (value.length > 10) {
+            return this.createError({ message: 'Phone number cannot exceed 10 digits' });
+          }
+          return true;
+        }),
       email: yup.string().email('Please enter a valid email').nullable(),
     }),
     mother: yup.object({
       name: yup.string().required('Mother name is required'),
       phone: yup
         .string()
-        .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
-        .required('Mother phone is required'),
+        .required('Mother phone is required')
+        .test('phone-validation', function(value) {
+          if (!value) return true;
+          if (!/^[0-9]+$/.test(value)) {
+            return this.createError({ message: 'Phone number must contain only digits' });
+          }
+          if (value.length < 10) {
+            return this.createError({ message: 'Phone number must be at least 10 digits' });
+          }
+          if (value.length > 10) {
+            return this.createError({ message: 'Phone number cannot exceed 10 digits' });
+          }
+          return true;
+        }),
       email: yup.string().email('Please enter a valid email').nullable(),
     }),
   }),
@@ -113,16 +149,38 @@ export const staffValidationSchema = yup.object({
     .required('Confirm password is required'),
   phone: yup
     .string()
-    .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
-    .required('Phone number is required'),
+    .required('Phone number is required')
+    .test('phone-validation', function(value) {
+      if (!value) return true; // Let required handle empty values
+      if (!/^[0-9]+$/.test(value)) {
+        return this.createError({ message: 'Phone number must contain only digits' });
+      }
+      if (value.length < 10) {
+        return this.createError({ message: 'Phone number must be at least 10 digits' });
+      }
+      if (value.length > 10) {
+        return this.createError({ message: 'Phone number cannot exceed 10 digits' });
+      }
+      return true;
+    }),
   department: yup
     .string()
-    .oneOf(['Administration', 'Academics', 'Sports', 'Arts', 'Science', 'Mathematics', 'Languages', 'Social Studies'])
+    .oneOf(['Administration', 'Academics', 'Sports', 'Arts', 'Science'])
     .required('Department is required'),
-  position: yup
-    .string()
-    .oneOf(['Principal', 'Vice Principal', 'Head Teacher', 'Teacher', 'Assistant Teacher', 'Admin Staff', 'Sports Coach', 'Librarian'])
-    .required('Position is required'),
+  permissions: yup.object({
+    students: yup.object({
+      create: yup.boolean().required(),
+      read: yup.boolean().required(),
+      update: yup.boolean().required(),
+      delete: yup.boolean().required()
+    }).required(),
+    staff: yup.object({
+      create: yup.boolean().required(),
+      read: yup.boolean().required(),
+      update: yup.boolean().required(),
+      delete: yup.boolean().required()
+    }).required()
+  }).required(),
 });
 
 // Login validation schema
