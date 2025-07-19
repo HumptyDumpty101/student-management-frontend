@@ -20,11 +20,55 @@ const ProfilePage = () => {
   const dispatch = useDispatch();
   const { user, loading } = useSelector(state => state.auth);
   const [isEditing, setIsEditing] = useState(false);
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    department: ''
+  });
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+
+  // Initialize profile data when user changes
+  React.useEffect(() => {
+    if (user) {
+      setProfileData({
+        firstName: user.name?.firstName || '',
+        lastName: user.name?.lastName || '',
+        phone: user.phone || '',
+        department: user.department || ''
+      });
+    }
+  }, [user]);
+
+  const handleProfileDataChange = (field, value) => {
+    setProfileData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      // TODO: Add API call to update profile
+      console.log('Saving profile data:', profileData);
+      dispatch(showSnackbar({ message: 'Profile updated successfully', severity: 'success' }));
+      setIsEditing(false);
+    } catch (error) {
+      dispatch(showSnackbar({ message: 'Failed to update profile', severity: 'error' }));
+    }
+  };
+
+  const handleCancelEdit = () => {
+    // Reset profile data to original user data
+    setProfileData({
+      firstName: user?.name?.firstName || '',
+      lastName: user?.name?.lastName || '',
+      phone: user?.phone || '',
+      department: user?.department || ''
+    });
+    setIsEditing(false);
+  };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -36,10 +80,17 @@ const ProfilePage = () => {
     try {
       await dispatch(changePassword({
         currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
+        newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword
       })).unwrap();
-      dispatch(showSnackbar({ message: 'Password changed successfully', severity: 'success' }));
+      dispatch(showSnackbar({ 
+        message: 'Password changed successfully. You will be logged out for security.', 
+        severity: 'success' 
+      }));
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      
+      // The backend logs out the user for security, so we'll be redirected to login
+      // No need to do anything else, the auth interceptor will handle the redirect
     } catch (error) {
       dispatch(showSnackbar({ message: error, severity: 'error' }));
     }
@@ -98,7 +149,8 @@ const ProfilePage = () => {
                   <TextField
                     fullWidth
                     label="First Name"
-                    value={user?.name?.firstName || ''}
+                    value={profileData.firstName}
+                    onChange={(e) => handleProfileDataChange('firstName', e.target.value)}
                     disabled={!isEditing}
                   />
                 </Grid>
@@ -106,7 +158,8 @@ const ProfilePage = () => {
                   <TextField
                     fullWidth
                     label="Last Name"
-                    value={user?.name?.lastName || ''}
+                    value={profileData.lastName}
+                    onChange={(e) => handleProfileDataChange('lastName', e.target.value)}
                     disabled={!isEditing}
                   />
                 </Grid>
@@ -122,7 +175,8 @@ const ProfilePage = () => {
                   <TextField
                     fullWidth
                     label="Phone"
-                    value={user?.phone || ''}
+                    value={profileData.phone}
+                    onChange={(e) => handleProfileDataChange('phone', e.target.value)}
                     disabled={!isEditing}
                   />
                 </Grid>
@@ -140,7 +194,8 @@ const ProfilePage = () => {
                       <TextField
                         fullWidth
                         label="Department"
-                        value={user?.department || ''}
+                        value={profileData.department}
+                        onChange={(e) => handleProfileDataChange('department', e.target.value)}
                         disabled={!isEditing}
                       />
                     </Grid>
@@ -150,10 +205,10 @@ const ProfilePage = () => {
 
               {isEditing && (
                 <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-                  <Button variant="contained" startIcon={<Save />}>
+                  <Button variant="contained" startIcon={<Save />} onClick={handleSaveProfile}>
                     Save Changes
                   </Button>
-                  <Button variant="outlined" onClick={() => setIsEditing(false)}>
+                  <Button variant="outlined" onClick={handleCancelEdit}>
                     Cancel
                   </Button>
                 </Box>

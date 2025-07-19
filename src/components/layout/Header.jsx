@@ -70,10 +70,10 @@ const Header = ({ drawerWidth }) => {
             <AccountCircle sx={{ mr: 1 }} />
             Profile
           </MenuItem>
-          <MenuItem onClick={() => setAnchorEl(null)}>
+          {/* <MenuItem onClick={() => setAnchorEl(null)}>
             <Settings sx={{ mr: 1 }} />
             Settings
-          </MenuItem>
+          </MenuItem> */}
           <Divider />
           <MenuItem onClick={handleLogout}>
             <Logout sx={{ mr: 1 }} />

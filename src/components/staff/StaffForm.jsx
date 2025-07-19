@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -32,8 +32,16 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
   const isEdit = Boolean(staff);
   const [submissionError, setSubmissionError] = useState(null);
   const [showErrors, setShowErrors] = useState(false);
+
+  // Simple validation schema - omit password for edit mode
+  const validationSchema = useMemo(() => {
+    return isEdit 
+      ? staffValidationSchema.omit(['password', 'confirmPassword'])
+      : staffValidationSchema;
+  }, [isEdit]);
   
-  const initialValues = {
+  // Memoize initial values to prevent unnecessary re-renders
+  const initialValues = useMemo(() => ({
     name: {
       firstName: staff?.name?.firstName || '',
       lastName: staff?.name?.lastName || ''
@@ -57,7 +65,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
     },
     password: '',
     confirmPassword: ''
-  };
+  }), [staff]);
 
   const {
     values,
@@ -69,8 +77,49 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
     handleSubmit,
     getNestedValue,
     validateForm,
-    setIsSubmitting
-  } = useFormValidation(staffValidationSchema, initialValues);
+    setIsSubmitting,
+    setValues
+  } = useFormValidation(validationSchema, initialValues);
+
+  // Update form values when staff prop changes (for edit mode) - only once when dialog opens
+  useEffect(() => {
+    if (staff && open && isEdit) {
+      const updatedValues = {
+        name: {
+          firstName: staff.name?.firstName || '',
+          lastName: staff.name?.lastName || ''
+        },
+        email: staff.email || '',
+        phone: staff.phone || '',
+        department: staff.department || '',
+        permissions: {
+          students: {
+            create: staff.permissions?.students?.create || false,
+            read: staff.permissions?.students?.read || false,
+            update: staff.permissions?.students?.update || false,
+            delete: staff.permissions?.students?.delete || false
+          },
+          staff: {
+            create: staff.permissions?.staff?.create || false,
+            read: staff.permissions?.staff?.read || false,
+            update: staff.permissions?.staff?.update || false,
+            delete: staff.permissions?.staff?.delete || false
+          }
+        },
+        password: '',
+        confirmPassword: ''
+      };
+      setValues(updatedValues);
+    }
+  }, [staff?.id, open, isEdit, setValues]);
+
+  // Reset form state when dialog opens/closes
+  useEffect(() => {
+    if (open) {
+      setSubmissionError(null);
+      setShowErrors(false);
+    }
+  }, [open]);
 
   const handleFormSubmit = useCallback(async () => {
     setSubmissionError(null);
@@ -91,7 +140,10 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
       // Clean up the form data before submission
       const { confirmPassword, ...cleanedData } = values;
       
-      // Wait for server response
+      console.log('StaffForm: Submitting data:', cleanedData);
+      console.log('StaffForm: Is edit mode:', isEdit);
+      
+      // Wait for server response - this will throw if there's an error
       await onSubmit(cleanedData);
       
       // Only close if we get here (success)
@@ -102,7 +154,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
     } finally {
       setIsSubmitting(false);
     }
-  }, [validateForm, values, onSubmit, onClose]);
+  }, [validateForm, values, onSubmit, onClose, setIsSubmitting]);
 
   const departments = ['Administration', 'Academics', 'Sports', 'Arts', 'Science'];
 
@@ -126,7 +178,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
   return (
     <Dialog 
       open={open} 
-      onClose={onClose} 
+      onClose={!isSubmitting ? onClose : undefined} // Prevent closing while submitting
       maxWidth="lg" 
       fullWidth
       fullScreen={{ xs: true, sm: false }}
@@ -172,6 +224,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                         onBlur={() => handleBlur('name.firstName')}
                         error={(touched['name.firstName'] || showErrors) && !!errors['name.firstName']}
                         helperText={(touched['name.firstName'] || showErrors) && errors['name.firstName']}
+                        disabled={isSubmitting}
                         required
                       />
                     </Grid>
@@ -185,6 +238,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                         onBlur={() => handleBlur('name.lastName')}
                         error={(touched['name.lastName'] || showErrors) && !!errors['name.lastName']}
                         helperText={(touched['name.lastName'] || showErrors) && errors['name.lastName']}
+                        disabled={isSubmitting}
                         required
                       />
                     </Grid>
@@ -199,6 +253,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                         onBlur={() => handleBlur('email')}
                         error={(touched.email || showErrors) && !!errors.email}
                         helperText={(touched.email || showErrors) && errors.email}
+                        disabled={isSubmitting}
                         required
                       />
                     </Grid>
@@ -212,6 +267,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                         onBlur={() => handleBlur('phone')}
                         error={(touched.phone || showErrors) && !!errors.phone}
                         helperText={(touched.phone || showErrors) && errors.phone}
+                        disabled={isSubmitting}
                         required
                       />
                     </Grid>
@@ -226,6 +282,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                         onBlur={() => handleBlur('department')}
                         error={(touched.department || showErrors) && !!errors.department}
                         helperText={(touched.department || showErrors) && errors.department}
+                        disabled={isSubmitting}
                         required
                       >
                         {departments.map((dept) => (
@@ -260,6 +317,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                           onBlur={() => handleBlur('password')}
                           error={(touched.password || showErrors) && !!errors.password}
                           helperText={(touched.password || showErrors) && errors.password}
+                          disabled={isSubmitting}
                           required
                         />
                       </Grid>
@@ -274,6 +332,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                           onBlur={() => handleBlur('confirmPassword')}
                           error={(touched.confirmPassword || showErrors) && !!errors.confirmPassword}
                           helperText={(touched.confirmPassword || showErrors) && errors.confirmPassword}
+                          disabled={isSubmitting}
                           required
                         />
                       </Grid>
@@ -303,6 +362,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                                 checked={getNestedValue('permissions.students.create') || false}
                                 onChange={(e) => handlePermissionChange('students', 'create', e.target.checked)}
                                 color="primary"
+                                disabled={isSubmitting}
                               />
                             }
                             label="Create Students"
@@ -313,6 +373,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                                 checked={getNestedValue('permissions.students.read') || false}
                                 onChange={(e) => handlePermissionChange('students', 'read', e.target.checked)}
                                 color="primary"
+                                disabled={isSubmitting}
                               />
                             }
                             label="View Students"
@@ -323,6 +384,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                                 checked={getNestedValue('permissions.students.update') || false}
                                 onChange={(e) => handlePermissionChange('students', 'update', e.target.checked)}
                                 color="primary"
+                                disabled={isSubmitting}
                               />
                             }
                             label="Update Students"
@@ -333,6 +395,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                                 checked={getNestedValue('permissions.students.delete') || false}
                                 onChange={(e) => handlePermissionChange('students', 'delete', e.target.checked)}
                                 color="primary"
+                                disabled={isSubmitting}
                               />
                             }
                             label="Delete Students"
@@ -353,6 +416,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                                 checked={getNestedValue('permissions.staff.create') || false}
                                 onChange={(e) => handlePermissionChange('staff', 'create', e.target.checked)}
                                 color="secondary"
+                                disabled={isSubmitting}
                               />
                             }
                             label="Create Staff"
@@ -363,6 +427,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                                 checked={getNestedValue('permissions.staff.read') || false}
                                 onChange={(e) => handlePermissionChange('staff', 'read', e.target.checked)}
                                 color="secondary"
+                                disabled={isSubmitting}
                               />
                             }
                             label="View Staff"
@@ -373,6 +438,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                                 checked={getNestedValue('permissions.staff.update') || false}
                                 onChange={(e) => handlePermissionChange('staff', 'update', e.target.checked)}
                                 color="secondary"
+                                disabled={isSubmitting}
                               />
                             }
                             label="Update Staff"
@@ -383,6 +449,7 @@ const StaffForm = ({ open, onClose, onSubmit, staff = null, loading = false }) =
                                 checked={getNestedValue('permissions.staff.delete') || false}
                                 onChange={(e) => handlePermissionChange('staff', 'delete', e.target.checked)}
                                 color="secondary"
+                                disabled={isSubmitting}
                               />
                             }
                             label="Delete Staff"

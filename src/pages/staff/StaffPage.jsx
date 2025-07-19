@@ -11,15 +11,16 @@ import {
   CardContent,
   Pagination,
   MenuItem,
-  Chip
+Chip
 } from '@mui/material';
 import { Search, Add } from '@mui/icons-material';
 import { ConfirmDialog, StyledTextField } from '../../components/common';
-import { StaffForm, StaffList } from '../../components/staff';
+import { StaffForm, StaffList, StaffDetails } from '../../components/staff';
 import { 
   fetchStaff, 
   createStaff, 
   updateStaff, 
+  updateStaffPermissions,
   deleteStaff,
   setFilters,
   clearSelectedStaff 
@@ -51,16 +52,55 @@ const StaffPage = () => {
   };
 
   const handleCreateStaff = async (staffData) => {
-    await dispatch(createStaff(staffData)).unwrap();
-    dispatch(showSnackbar({ message: 'Staff member created successfully', severity: 'success' }));
-    // Form will handle closing the dialog
+    console.log('StaffPage: handleCreateStaff called with:', staffData);
+    try {
+      console.log('StaffPage: Dispatching createStaff with .unwrap()...');
+      // This is the key fix - use .unwrap() to get error throwing behavior
+      await dispatch(createStaff(staffData)).unwrap();
+      
+      console.log('StaffPage: createStaff was successful');
+      dispatch(showSnackbar({ message: 'Staff member created successfully', severity: 'success' }));
+      // Success - form will handle closing the dialog
+    } catch (error) {
+      console.error('StaffPage: handleCreateStaff error caught:', error);
+      // Re-throw error so the form can handle it
+      throw error;
+    }
   };
 
   const handleUpdateStaff = async (staffData) => {
-    await dispatch(updateStaff({ id: selectedStaff._id, data: staffData })).unwrap();
-    dispatch(showSnackbar({ message: 'Staff member updated successfully', severity: 'success' }));
-    setSelectedStaff(null);
-    // Form will handle closing the dialog
+    console.log('StaffPage: handleUpdateStaff called with:', staffData);
+    
+    try {
+      // Always update basic staff info first (without permissions)
+      const { permissions, ...staffDataWithoutPermissions } = staffData;
+      
+      if (Object.keys(staffDataWithoutPermissions).length > 0) {
+        console.log('StaffPage: Updating basic staff data...');
+        await dispatch(updateStaff({ 
+          id: selectedStaff._id, 
+          data: staffDataWithoutPermissions 
+        })).unwrap();
+      }
+
+      // Then update permissions separately using the dedicated endpoint
+      if (permissions) {
+        console.log('StaffPage: Updating staff permissions...');
+        await dispatch(updateStaffPermissions({ 
+          id: selectedStaff._id, 
+          permissions: permissions 
+        })).unwrap();
+      }
+      
+      console.log('StaffPage: Update was successful');
+      dispatch(showSnackbar({ message: 'Staff member updated successfully', severity: 'success' }));
+      setSelectedStaff(null);
+      // Success - form will handle closing the dialog
+    } catch (error) {
+      console.error('StaffPage: handleUpdateStaff error caught:', error);
+      // Re-throw error so the form can handle it
+      throw error;
+    }
   };
 
   const handleDeleteStaff = async () => {
@@ -252,6 +292,16 @@ const StaffPage = () => {
         onSubmit={handleUpdateStaff}
         staff={selectedStaff}
         loading={actionLoading.update}
+      />
+
+      {/* Staff Details Dialog */}
+      <StaffDetails
+        open={dialogs.staffDetails}
+        onClose={() => {
+          dispatch(closeDialog('staffDetails'));
+          setSelectedStaff(null);
+        }}
+        staff={selectedStaff}
       />
 
       <ConfirmDialog

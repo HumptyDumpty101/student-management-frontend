@@ -1,4 +1,3 @@
-// src/store/slices/staffSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { staffService } from '../../services/staffService';
 
@@ -10,9 +9,8 @@ export const fetchStaff = createAsyncThunk(
       const response = await staffService.getStaff(params);
       return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.message || 'Failed to fetch staff'
-      );
+      console.error('fetchStaff error:', error);
+      return rejectWithValue(error.message || 'Failed to fetch staff');
     }
   }
 );
@@ -24,9 +22,8 @@ export const fetchStaffMember = createAsyncThunk(
       const response = await staffService.getStaffMember(id);
       return response.data.staff;
     } catch (error) {
-      return rejectWithValue(
-        error.message || 'Failed to fetch staff member'
-      );
+      console.error('fetchStaffMember error:', error);
+      return rejectWithValue(error.message || 'Failed to fetch staff member');
     }
   }
 );
@@ -35,12 +32,15 @@ export const createStaff = createAsyncThunk(
   'staff/createStaff',
   async (staffData, { rejectWithValue }) => {
     try {
+      console.log('createStaff thunk called with:', staffData);
       const response = await staffService.createStaff(staffData);
+      console.log('createStaff response:', response);
       return response.data.staff;
     } catch (error) {
-      return rejectWithValue(
-        error.message || 'Failed to create staff member'
-      );
+      console.error('createStaff thunk error:', error);
+      // The key is to return rejectWithValue with a string message
+      // This will be what gets thrown when using .unwrap()
+      return rejectWithValue(error.message || 'Failed to create staff member');
     }
   }
 );
@@ -52,9 +52,8 @@ export const updateStaff = createAsyncThunk(
       const response = await staffService.updateStaff(id, data);
       return response.data.staff;
     } catch (error) {
-      return rejectWithValue(
-        error.message || 'Failed to update staff member'
-      );
+      console.error('updateStaff error:', error);
+      return rejectWithValue(error.message || 'Failed to update staff member');
     }
   }
 );
@@ -66,9 +65,8 @@ export const deleteStaff = createAsyncThunk(
       await staffService.deleteStaff(id);
       return id;
     } catch (error) {
-      return rejectWithValue(
-        error.message || 'Failed to delete staff member'
-      );
+      console.error('deleteStaff error:', error);
+      return rejectWithValue(error.message || 'Failed to delete staff member');
     }
   }
 );
@@ -80,9 +78,8 @@ export const updateStaffPermissions = createAsyncThunk(
       const response = await staffService.updatePermissions(id, permissions);
       return { id, permissions: response.data.permissions };
     } catch (error) {
-      return rejectWithValue(
-        error.message || 'Failed to update permissions'
-      );
+      console.error('updateStaffPermissions error:', error);
+      return rejectWithValue(error.message || 'Failed to update permissions');
     }
   }
 );
@@ -94,9 +91,8 @@ export const activateStaff = createAsyncThunk(
       const response = await staffService.activateStaff(id);
       return response.data.staff;
     } catch (error) {
-      return rejectWithValue(
-        error.message || 'Failed to activate staff member'
-      );
+      console.error('activateStaff error:', error);
+      return rejectWithValue(error.message || 'Failed to activate staff member');
     }
   }
 );
@@ -108,9 +104,8 @@ export const deactivateStaff = createAsyncThunk(
       const response = await staffService.deactivateStaff(id);
       return response.data.staff;
     } catch (error) {
-      return rejectWithValue(
-        error.message || 'Failed to deactivate staff member'
-      );
+      console.error('deactivateStaff error:', error);
+      return rejectWithValue(error.message || 'Failed to deactivate staff member');
     }
   }
 );

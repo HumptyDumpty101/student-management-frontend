@@ -139,14 +139,6 @@ export const staffValidationSchema = yup.object({
     .string()
     .email('Please enter a valid email address')
     .required('Email is required'),
-  password: yup
-    .string()
-    .min(6, 'Password must be at least 6 characters')
-    .required('Password is required'),
-  confirmPassword: yup
-    .string()
-    .oneOf([yup.ref('password')], 'Passwords must match')
-    .required('Confirm password is required'),
   phone: yup
     .string()
     .required('Phone number is required')
@@ -181,6 +173,14 @@ export const staffValidationSchema = yup.object({
       delete: yup.boolean().required()
     }).required()
   }).required(),
+  password: yup
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref('password')], 'Passwords must match')
+    .required('Confirm password is required'),
 });
 
 // Login validation schema
